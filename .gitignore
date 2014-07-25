@@ -1,0 +1,11 @@
+# History files
+.Rhistory
+
+# Example code in package build process
+*-Ex.R
+
+# Datafiles
+*.csv
+*.RData
+data/
+cache/
