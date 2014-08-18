@@ -17,23 +17,21 @@ lastYearOfStudy <- 2008
 
 startingWave <- 1
 
-masterFile <- "ppfad.dta"
-idName <- "persnr"
-hID <- "hhnr" # Needs wave prefix
+masterFile <- "xwavedat.dta"
+idName <- "pid"
+hID <- "hid" # Needs wave prefix
 charsToSub <- "\\$"
 
 # -------------------- list of waves and files -------------------- #
 
-gsoep_prefixes <- c(letters[1:7],letters[7:26],paste("b",letters[1:2],sep=""))
-gsoep_years <- c(1984:1990,1990:2011)
-gsoep_ind_files <- paste(gsoep_prefixes,"p.dta",sep="")
-gsoep_ind_files[8] <- "gpost.dta"
-gsoep_h_files <- paste(gsoep_prefixes, "h.dta", sep="")
-gsoep_h_files[8] <- "ghost.dta"
-gsoep_eq_files <- paste(gsoep_prefixes, "pequiv.dta", sep="")
-gsoep_eq_files[8] <- NA
-gsoep_files <- as.data.frame(cbind(gsoep_years,gsoep_ind_files,gsoep_h_files,gsoep_eq_files), stringsAsFactors=FALSE)
-gsoep_files$gsoep_years <- as.numeric(gsoep_files$gsoep_years)
+bhps_prefixes <- letters[1:18]
+bhps_years <- c(1991:2008)
+bhps_ind_files <- paste(bhps_prefixes,"indresp.dta",sep="")
+bhps_h_files <- paste(bhps_prefixes, "hhresp.dta", sep="")
+bhps_files <- as.data.frame(cbind(bhps_years,bhps_ind_files,bhps_h_files), stringsAsFactors=FALSE)
+bhps_files$bhps_years <- as.numeric(bhps_files$bhps_years)
+ls_bhps_files <- bhps_files[c(6:10,12:18),]
+ls_waves <- c("f","g","h","i","j","l","m","n","o","p","q","r")
 
 
 
@@ -41,26 +39,20 @@ gsoep_files$gsoep_years <- as.numeric(gsoep_files$gsoep_years)
 ## Provide a matrix with each line specifying a wave and a variable name
 ## Provides either a wide or long file with respondent ID, and all requested waves of a variable.
 ## Sample Year is provided with long files
-## IMPORTANT: Length of 'variables' must match gsoep_files, even if some entries are missing
-get_variable <- function(variables, newName, wide=FALSE, convertFactors=FALSE) {
+## IMPORTANT: Length of 'variables' must match bhps_files, even if some entries are missing
+## For BHPS: It is necessary to add a waves variable that specifies which waves variables come from.
+get_variable <- function(variables, newName, wide=FALSE, convertFactors=FALSE, bhpsFiles=bhps_files) {
     master <- read.dta(paste(pathOriginalData, masterFile, sep=""))
     master <- data.frame(master[,c(idName)], stringsAsFactors=FALSE)
     names(master) <- idName
     for (i in 1:length(variables)) {
         if (!is.na(variables[i])) {
-            newDataFileName <- paste(pathOriginalData, gsoep_files[i,2], sep="")
-            newVariableName <- paste(newName, gsoep_files[i,1], sep="-")
+            newDataFileName <- paste(pathOriginalData, bhpsFiles[i,2], sep="")
+            newVariableName <- paste(newName, bhpsFiles[i,1], sep="-")
             data <- read.dta(newDataFileName,convert.factors=convertFactors)
             data <- data[,c(idName, tolower(variables[i]))]
             names(data)[2] <- newVariableName
             master <- merge(master, data, by = idName, all.x=TRUE)
-            if (i==8) {
-                master[,newVariableName] <- master[,paste(newVariableName, "x", sep=".")]
-                master[which(is.na(master[,newVariableName])),newVariableName] <-
-                    master[which(is.na(master[,newVariableName])),paste(newVariableName, "y", sep=".")]
-                drops <- c(paste(newVariableName, c("x","y"), sep="."))
-                master <- master[,!names(master) %in% drops]
-            }
         }
     }
     if (wide==FALSE) {
