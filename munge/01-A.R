@@ -32,6 +32,8 @@ disJob[which(!is.na(disJob$disJob)),"disJobDummy"] <- 0
 disJob[which(disJob$wave==1991&disJob$disJob==7),"disJobDummy"] <- 1
 disJob[which(disJob$wave>1991&disJob$disJob==8),"disJobDummy"] <- 1
 cache('disJob')
+disWide2 <- dcast(disJob, pid ~ wave)
+cache('disWide2')
 
 # -------------------- find people who became disabled -------------------- #
 notDisabledYear <- firstStatus(dis, "disDummy", 0, "notDisMin")
@@ -76,16 +78,22 @@ stayedDisabled2 <- disabilityCombined2[which(disabilityCombined2[, "notDisMin2"]
 cache('stayedDisabled2')
 
 
+# Repeat everything below for the two disability variables #
+
 # -------------------- wide file for those who got disabled -------------------- #
 gotDisWide <- merge(disWide, gotDisabled, by = idName)
+gotDisWide2 <- merge(disWide2, gotDisabled2, by = idName)
 
 # -------------------- set up transitions with TraMineR -------------------- #
 #gotDisWide$seq <- seqconc(gotDisWide[,2:27], void='')
 dis.seq <- seqdef(gotDisWide, 2:12, labels = c("disabled","notDisabled"), id=gotDisWide$pid)
+dis.seq2 <- seqdef(gotDisWide2, 2:19, labels = c("disabled","notDisabled"), id=gotDisWide2$pid)
 #gotDisWide$dis.seq <- dis.seq
 transition <- seqetm(dis.seq, method="transition")
+transition2 <- seqetm(dis.seq2, method="transition")
 #transition <- transition[1:2,1:2]
 dis.tse <- seqformat(gotDisWide, 2:12, from="STS", to = "TSE", tevent=transition, id="pid")
+dis.tse2 <- seqformat(gotDisWide2, 2:19, from="STS", to = "TSE", tevent=transition, id="pid")
 
 ########################################################################
 # Number of transitions
@@ -98,8 +106,12 @@ dis.tse <- seqformat(gotDisWide, 2:12, from="STS", to = "TSE", tevent=transition
 dis.dss <- seqdss(dis.seq)
 gotDisWide$dis.dss <- dis.dss
 
+dis.dss2 <- seqdss(dis.seq2)
+gotDisWide2$dis.dss2 <- dis.dss2
+
 # Identify number of transitions from dss (this should be accurate)
 gotDisWide$nTransitions <- seqlength(gotDisWide$dis.dss)-1
+gotDisWide2$nTransitions2 <- seqlength(gotDisWide2$dis.dss2)-1
 
 # Identify number of distinct states from tse data (this will miss transitions with missing data)
 dis.agg <- aggregate(dis.tse$id, by=list(dis.tse$id), FUN=length)
@@ -107,14 +119,23 @@ names(dis.agg) <- c(idName, "dis.agg")
 dis.agg$pid <- as.integer(dis.agg$pid)
 gotDisWide <- merge(gotDisWide, dis.agg, by = idName, sort=TRUE)
 
+dis.agg2 <- aggregate(dis.tse2$id, by=list(dis.tse2$id), FUN=length)
+names(dis.agg2) <- c(idName, "dis.agg2")
+dis.agg2$pid <- as.integer(dis.agg2$pid)
+gotDisWide2 <- merge(gotDisWide2, dis.agg2, by=idName, sort=TRUE)
+
 # Find duration of spells
 dis.dur <- seqdur(dis.seq)
 dis.dur.df <- data.frame(dis.dur)
 dis.dur.df$pid <- row.names(dis.dur.df)
 
+dis.dur2 <- seqdur(dis.seq2)
+dis.dur.df2 <- data.frame(dis.dur2)
+dis.dur.df2$pid <- row.names(dis.dur.df2)
+
 
 gotDisWide <- merge(gotDisWide, dis.dur.df, by="pid")
 cache('gotDisWide')
-
-
+gotDisWide2 <- merge(gotDisWide2, dis.dur.df2, by="pid")
+cache('gotDisWide2')
 
