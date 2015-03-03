@@ -93,7 +93,7 @@ transition <- seqetm(dis.seq, method="transition")
 transition2 <- seqetm(dis.seq2, method="transition")
 #transition <- transition[1:2,1:2]
 dis.tse <- seqformat(gotDisWide, 2:12, from="STS", to = "TSE", tevent=transition, id="pid")
-dis.tse2 <- seqformat(gotDisWide2, 2:19, from="STS", to = "TSE", tevent=transition, id="pid")
+dis.tse2 <- seqformat(gotDisWide2, 2:19, from="STS", to = "TSE", tevent=transition2, id="pid")
 
 ########################################################################
 # Number of transitions
