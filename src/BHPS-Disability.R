@@ -26,13 +26,13 @@ baseline <- lmer(ls ~ 1 + (1 | pid), data=disData)
 
 # Model 1 -- Basic MLM without centering
 model1a <- lmer(ls ~ disDummy + (1 + disDummy | pid), data=disData) 
-test <- lmer(ls ~ disDummy + (1 + disDummy | pid), data=disData,
-             control=lmerControl(optimizer="Nelder_Mead"))
+#test <- lmer(ls ~ disDummy + (1 + disDummy | pid), data=disData,
+             #control=lmerControl(optimizer="Nelder_Mead"))
 
 # Model 2 -- Centered disability + level 2 percentage: Equivalent to fixed effects
 model2a <- lmer(ls ~ disDummy.C + percentDis + (1 + disDummy.C | pid), data=disData)
-test2 <- lmer(ls ~ disDummy.C + percentDis + (1 + disDummy.C | pid), data=disData,
-              control=lmerControl(optimizer="Nelder_Mead"))
+#test2 <- lmer(ls ~ disDummy.C + percentDis + (1 + disDummy.C | pid), data=disData,
+              #control=lmerControl(optimizer="Nelder_Mead"))
 
 summary(model1a)
 summary(model2a)
