@@ -64,6 +64,10 @@ replication[which(replication$year>replication$disMin), "linear"] <-
 replication$yearBefore <- 0
 replication[which(replication$year==replication$disMin-1),'yearBefore'] <- 1
 
+# Center percentDis for interpretability
+replication$percentDis.C <- replication$percentDis-mean(replication$percentDis, na.rm=TRUE)
+
+
 # Baseline Model
 baseline <- lmer(ls ~ 1 + (1 | pid), data=replication)
 
@@ -71,7 +75,7 @@ baseline <- lmer(ls ~ 1 + (1 | pid), data=replication)
 model1 <- lmer(ls ~ yearBefore + disDummy + (1 + disDummy | pid), data=replication)
 
 # Model 2 -- Centered disability + level 2 percentage: Equivalent to fixed effects
-model2 <- lmer(ls ~ yearBefore + disDummy.C + percentDis + (1 + disDummy.C | pid), data=replication)
+model2 <- lmer(ls ~ yearBefore + disDummy.C + percentDis.C + (1 + disDummy.C | pid), data=replication)
 
 summary(model1)
 summary(model2)
